@@ -189,15 +189,20 @@ func requestProductsFromRegCodeOrSystem(data SUSEConnectData, regCode string,
 // the product to be requested.
 func RequestProducts(data SUSEConnectData, credentials Credentials,
 	installed InstalledProduct,
-) ([]Product, error) {
-	var products []Product
+) (products []Product, err error) {
 	var regCodes []string
-	var err error
 
 	regCodes, err = requestRegcodes(data, credentials)
 	if err != nil {
 		return products, err
 	}
+
+	products, err = RequestProductsFromRegCodes(data, regCodes, installed)
+	return
+}
+
+func RequestProductsFromRegCodes(data SUSEConnectData, regCodes []string, installed InstalledProduct) (products []Product, err error) {
+	var credentials Credentials
 
 	for _, regCode := range regCodes {
 		p, _err := requestProductsFromRegCodeOrSystem(data, regCode, credentials, installed)

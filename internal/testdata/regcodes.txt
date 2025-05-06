@@ -1,0 +1,5 @@
+# This is providing registration codes per product
+
+SLES: 3f5c440c-3e10-4788-9f76-de6768a45a73
+# Some comment
+SLED: e41467a0-5db7-4e24-bb36-41552b7ee5c8

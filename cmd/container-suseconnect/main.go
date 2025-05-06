@@ -101,8 +101,9 @@ func main() {
 
 // requestProducts collects a slice of products for the currently available
 // environment
-func requestProducts() ([]cs.Product, error) {
+func requestProducts() (products []cs.Product, err error) {
 	credentials := cs.Credentials{}
+	regCodes := cs.Regcodes{}
 	suseConnectData := cs.SUSEConnectData{}
 
 	// read config from "containerbuild-regionsrv" service, if that service is
@@ -129,6 +130,11 @@ func requestProducts() ([]cs.Product, error) {
 
 		regionsrv.UpdateHostsFile(cloudCfg.ServerFqdn, cloudCfg.ServerIP)
 	} else {
+
+		if err := cs.ReadConfiguration(&regCodes); err != nil {
+			return nil, err
+		}
+
 		if err := cs.ReadConfiguration(&credentials); err != nil {
 			return nil, err
 		}
@@ -146,9 +152,20 @@ func requestProducts() ([]cs.Product, error) {
 	log.Printf("Installed product: %v\n", installedProduct)
 	log.Printf("Registration server set to %v\n", suseConnectData.SccURL)
 
-	products, err := cs.RequestProducts(suseConnectData, credentials, installedProduct)
-	if err != nil {
-		return nil, err
+	if len(regCodes) > 0 {
+		log.Printf("Using Regcode to fetch products\n")
+		products, err = cs.RequestProductsFromRegCodes(suseConnectData, regCodes, installedProduct)
+		if err != nil {
+			return nil, err
+		}
+
+	} else {
+		log.Printf("Using System credentials to fetch products\n")
+		products, err = cs.RequestProducts(suseConnectData, credentials, installedProduct)
+		if err != nil {
+			return nil, err
+		}
+
 	}
 
 	return products, nil
